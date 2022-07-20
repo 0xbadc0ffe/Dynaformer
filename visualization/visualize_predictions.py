@@ -5,7 +5,8 @@ from surrogate.data_modules.data_modules import*
 from os import listdir
 from os.path import isfile, join
 from surrogate.data_modules.data_modules import*
-from surrogate.models import TransfomerBasedArchitecture
+#from surrogate.models import TransfomerBasedArchitecture
+from surrogate.models.dynaformer import Dynaformer
 from pathlib import Path
 import streamlit as st
 import plotly.graph_objects as go
@@ -63,7 +64,7 @@ def main():
         df = df_single.sort_index(axis=1)      
         selected = st.selectbox("Select a run", sorted(df.columns,reverse=True),index=0)
 
-    val_dir = st.text_input("Insert path to the dataset (Something like dataset/YYYY-MM-DD/HH-MM-SS/data", "dataset/2022-04-27/14-58-12/data")
+    val_dir = st.text_input("Insert path to the dataset (Something like dataset/YYYY-MM-DD/HH-MM-SS/data", "data/variable_currents/2022-04-27/14-58-12/data")
     config_dataset = safe_load(open(Path(val_dir) / "../.hydra/config.yaml", 'r'))
 
     is_testing_prefix = st.checkbox("Use testing suffix")
@@ -88,7 +89,10 @@ def main():
         key = ("path",0)
         model_path = Path(df.loc[key,selected])
         st.write(model_path)
-        model = TransfomerBasedArchitecture.load_from_checkpoint(model_path)
+        # model = TransfomerBasedArchitecture.load_from_checkpoint(model_path)
+        # model.eval()
+        model = Dynaformer()
+        model.load_state_dict(torch.load(model_path)["state_dict"])
         model.eval()
 
     metrics = {"rmse": [], "mse": [],  "wasserstein": []}
