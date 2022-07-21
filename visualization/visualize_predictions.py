@@ -92,7 +92,10 @@ def main():
         # model = TransfomerBasedArchitecture.load_from_checkpoint(model_path)
         # model.eval()
         model = Dynaformer()
-        model.load_state_dict(torch.load(model_path)["state_dict"])
+        if torch.cuda.is_available():
+            model.load_state_dict(torch.load(model_path)["state_dict"])
+        else:
+            model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu'))["state_dict"])
         model.eval()
 
     metrics = {"rmse": [], "mse": [],  "wasserstein": []}
